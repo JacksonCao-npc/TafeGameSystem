@@ -54,16 +54,24 @@ public class Attributes : MonoBehaviour
         //we are unalived
         isUnAlived = true;
     }
+    public virtual void SetHealth()
+    {
+        attributes[0].displayImage.fillAmount = Mathf.Clamp01(attributes[0].currentValue / attributes[0].maxValue);
+    }
+    public virtual void SetMana()
+    {
+        attributes[1].displayImage.fillAmount = Mathf.Clamp01(attributes[1].currentValue / attributes[1].maxValue);
+    }
+    public virtual void SetStamina()
+    {
+        attributes[2].displayImage.fillAmount = Mathf.Clamp01(attributes[2].currentValue / attributes[2].maxValue);
+    }
     public virtual void Update()
     {
         #region Attributes Display
-        //loop through each attribute, i is the current attribute we are editing
-        for (int i = 0; i < attributes.Length; i++)
-        {
-            //change our current attribute to a percent being displayed between 0 and 1 aka .5 = 50 percent
-            //50/100 = 50 percent or 0.5
-            attributes[i].displayImage.fillAmount = Mathf.Clamp01(attributes[i].currentValue/attributes[i].maxValue);
-        }
+        SetHealth();
+        SetMana();
+        SetStamina();
         #endregion
         #region Can Heal
         //if we cant heal

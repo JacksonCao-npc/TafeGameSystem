@@ -25,5 +25,4 @@ public class Wolf : EnemyBase
         }
         player.GetComponent<PlayerHandler>().Damage(baseDamage * difficulty + critDamage);
     }
-    
 }

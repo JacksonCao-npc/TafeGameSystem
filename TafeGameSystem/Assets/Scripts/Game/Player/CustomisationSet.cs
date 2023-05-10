@@ -1,16 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 //you will need to change Scenes
 using UnityEngine.SceneManagement;
-using TMPro;
-using Unity.VisualScripting;
-
 public class CustomisationSet : Stats
 {
     #region Variables   
     [Header("Character Name")]
     //name of our character that the user is making
     public string characterName;
+    public TextMeshProUGUI characterNameUI;
     [Header("Texture List")]
     //Texture2D List for skin,hair, mouth, eyes
     public List<Texture2D> skin = new List<Texture2D>(); //1
@@ -19,7 +18,6 @@ public class CustomisationSet : Stats
     public List<Texture2D> hair = new List<Texture2D>(); //4
     public List<Texture2D> clothes = new List<Texture2D>();//5
     public List<Texture2D> armour = new List<Texture2D>(); //6
-   
     [Header("Index")]
     //index numbers for our current skin, hair, mouth, eyes, clothes and armour textures
     public int skinIndex;
@@ -32,24 +30,20 @@ public class CustomisationSet : Stats
     //max amount of skin, hair, mouth, eyes, clothes and armour textures that our lists are filling with
     public int skinMax;
     public int mouthMax, eyesMax, hairMax, clothesMax, armourMax;
-    public int helmMax;
+
     public string[] materialNames = new string[7] { "Skin", "Mouth", "Eyes", "Hair", "Clothes", "Armour", "Helm" };
-    //[Header("UI_Button")]
-    public TextMeshProUGUI[] materialsNameUI;
-
+    public TextMeshProUGUI[] materialNamesUI;
+    public Vector2 screen;
     [Header("Class and Race")]
-
-    public string[] arrtibuteName = new string[3] { "Health", "Stamina", "Mana" };
-    public string[] statName = new string[6] { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" };
     public bool raceDrop;
     public string raceDropDisplay = "Select Race";
     public bool classDrop;
     public string classDropDisplay = "Select Class";
     public Vector2 scrollPosRace, scrollPosClass;
     public int bonusStats = 6;
+    public string[] statName = new string[6] { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" };
 
 
-    public Vector2 screen;
     #endregion
 
     #region Start
@@ -105,58 +99,38 @@ public class CustomisationSet : Stats
             //add our temp texture that we just found to the  List
             armour.Add(temp);
         }
-
-        for (int i = 0; i < helmIndex; i++)
-        {
-            Texture2D temp = Resources.Load("Character/Armour_" + i) as Texture2D;
-            //add our temp texture that we just found to the  List
-            armour.Add(temp);
-        }
-        //UI Text
-        for (int i = 0; i < materialNames.Length; i++)
-        {
-            materialsNameUI[i].text = materialNames[i];
-        }
         #endregion
         //connect and find the Renderer thats in the scene to the variable we made for Renderer 
         character = GameObject.Find("Mesh").GetComponent<Renderer>();
         helm = GameObject.Find("cap").GetComponent<Renderer>();
         #region do this after making the function SetTexture
-        //SetTexture for all materials to the first texture 0    
-        #endregion
-
         SetTexture("Skin", skinIndex = 0);
         SetTexture("Mouth", mouthIndex = 0);
         SetTexture("Eyes", eyesIndex = 0);
         SetTexture("Hair", hairIndex = 0);
         SetTexture("Clothes", clothesIndex = 0);
         SetTexture("Armour", armourIndex = 0);
-        SetTexture("Helm", armourIndex = 0);
-
+        SetTexture("Helm", helmIndex = 0);
+        #endregion
+        // Settting the name of materials in the Canvans.
+        for (int i = 0; i < statName.Length+1; i++)
+        {
+            materialNamesUI[i].text = materialNames[i];
+        }
     }
     #endregion
-
-    #region ButtonMethods
-    public void LeftButtonClicked(int index)
+    #region Botton Methods
+    public void LeftButtons(int index)
     {
         SetTexture(materialNames[index], -1);
     }
-    public void RightButtonClicked(int index)
+
+    public void RightButtons(int index)
     {
         SetTexture(materialNames[index], +1);
     }
 
-    public void RandomClicked()
-    {
-        SetTexture("Skin", skinIndex = Random.Range(0, skinMax - 1));
-        SetTexture("Mouth", mouthIndex = Random.Range(0, mouthMax - 1));
-        SetTexture("Eyes", eyesIndex = Random.Range(0, eyesMax - 1));
-        SetTexture("Hair", hairIndex = Random.Range(0, hairIndex - 1));
-        SetTexture("Clothes", clothesIndex = Random.Range(0, clothesMax - 1));
-        SetTexture("Armour", armourIndex = Random.Range(0, armourMax - 1));
-    }
-
-    public void ResetButton()
+    public void ResetButtons()
     {
         SetTexture("Skin", skinIndex = 0);
         SetTexture("Mouth", mouthIndex = 0);
@@ -164,6 +138,23 @@ public class CustomisationSet : Stats
         SetTexture("Hair", hairIndex = 0);
         SetTexture("Clothes", clothesIndex = 0);
         SetTexture("Armour", armourIndex = 0);
+        SetTexture("Helm", helmIndex = 0);
+    }
+
+    public  void RandomButtons()
+    {
+        skinIndex = Random.Range(0, skinMax);
+        mouthIndex = Random.Range(0, mouthMax);
+        eyesIndex = Random.Range(0, eyesMax);
+        hairIndex = Random.Range(0, hairMax);
+        clothesIndex = Random.Range(0, clothesMax);
+        armourIndex = Random.Range(0, armourMax);
+        helmIndex = Random.Range(0, armourMax);
+
+        for (int i = 0; i < materialNames.Length; i++)
+        {
+            SetTexture(materialNames[i], 0);
+        }
     }
     #endregion
     #region SetTexture
@@ -267,7 +258,7 @@ public class CustomisationSet : Stats
                 break;
             //break
             case "Helm":
-                index = armourIndex;
+                index = helmIndex;
                 //index is the same as our  index
                 max = armourMax;
                 //max is the same as our max
@@ -296,7 +287,6 @@ public class CustomisationSet : Stats
         }
         //Material array is equal to our characters material list
         Material[] mat = curRend.materials;
-
         //our material arrays current material index's main texture is equal to our texture arrays current index
         mat[matIndex].mainTexture = textures[index];
         //our characters materials are equal to the material array
@@ -328,238 +318,239 @@ public class CustomisationSet : Stats
                 armourIndex = index;
                 break;
             case "Helm":
-                armourIndex = index;
+                helmIndex = index;
                 break;
         }
         #endregion
     }
-
+    #endregion
     #region Select Class
-
     void SelectClass(int classIndex)
     {
+        //create a switch statment that holds the base stats for each class
+
         switch (classIndex)
         {
             case 0:
-                characterStats[0].statValue = 3;//str
-                characterStats[1].statValue = 1;//dex
-                characterStats[2].statValue = 2;//con
-                characterStats[3].statValue = 0;//int
-                characterStats[4].statValue = 1;//wis
-                characterStats[5].statValue = 1;//char
+                characterStats[0].statValue = 13;//str
+                characterStats[1].statValue = 11;//dex
+                characterStats[2].statValue = 12;//con
+                characterStats[3].statValue = 10;//int
+                characterStats[4].statValue = 6;//wis
+                characterStats[5].statValue = 8;//char
                 characterClass = CharacterClass.Barbarian;
                 break;
+            #region the rest of the stats for class
             case 1:
-                characterStats[0].statValue = 1;//str
-                characterStats[1].statValue = 1;//dex
-                characterStats[2].statValue = 1;//con
-                characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 2;//wis
-                characterStats[5].statValue = 1;//char
+                characterStats[0].statValue = 6;//str
+                characterStats[1].statValue = 10;//dex
+                characterStats[2].statValue = 8;//con
+                characterStats[3].statValue = 12;//int
+                characterStats[4].statValue = 11;//wis
+                characterStats[5].statValue = 13;//char
                 characterClass = CharacterClass.Bard;
                 break;
             case 2:
-                characterStats[0].statValue = 1;//str
-                characterStats[1].statValue = 1;//dex
-                characterStats[2].statValue = 1;//con
-                characterStats[3].statValue = 1;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[0].statValue = 10;//str
+                characterStats[1].statValue = 6;//dex
+                characterStats[2].statValue = 11;//con
+                characterStats[3].statValue = 8;//int
+                characterStats[4].statValue = 13;//wis
+                characterStats[5].statValue = 12;//char
                 characterClass = CharacterClass.Cleric;
                 break;
             case 3:
-                characterStats[0].statValue = 3;//str
-                characterStats[1].statValue = 1;//dex
-                characterStats[2].statValue = 2;//con
-                characterStats[3].statValue = 0;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[0].statValue = 6;//str
+                characterStats[1].statValue = 12;//dex
+                characterStats[2].statValue = 8;//con
+                characterStats[3].statValue = 11;//int
+                characterStats[4].statValue = 13;//wis
+                characterStats[5].statValue = 10;//char
                 characterClass = CharacterClass.Druid;
                 break;
             case 4:
-                characterStats[0].statValue =20;//str
-                characterStats[1].statValue = 1;//dex
-                characterStats[2].statValue = 1;//con
-                characterStats[3].statValue = 1;//int
-                characterStats[4].statValue = 0;//wis
-                characterStats[5].statValue = 0;//char
+                characterStats[0].statValue = 13;//str
+                characterStats[1].statValue = 11;//dex
+                characterStats[2].statValue = 12;//con
+                characterStats[3].statValue = 8;//int
+                characterStats[4].statValue = 6;//wis
+                characterStats[5].statValue = 10;//char
                 characterClass = CharacterClass.Fighter;
                 break;
             case 5:
-                characterStats[0].statValue = 15;//str
-                characterStats[1].statValue = 3;//dex
-                characterStats[2].statValue = 3;//con
-                characterStats[3].statValue = 1;//int
-                characterStats[4].statValue = 0;//wis
-                characterStats[5].statValue = 0;//char
+                characterStats[0].statValue = 10;//str
+                characterStats[1].statValue = 13;//dex
+                characterStats[2].statValue = 8;//con
+                characterStats[3].statValue = 11;//int
+                characterStats[4].statValue = 12;//wis
+                characterStats[5].statValue = 6;//char
                 characterClass = CharacterClass.Monk;
                 break;
             case 6:
                 characterStats[0].statValue = 12;//str
-                characterStats[1].statValue = 11;//dex
-                characterStats[2].statValue = 12;//con
-                characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[1].statValue = 10;//dex
+                characterStats[2].statValue = 11;//con
+                characterStats[3].statValue = 6;//int
+                characterStats[4].statValue = 8;//wis
+                characterStats[5].statValue = 13;//char
                 characterClass = CharacterClass.Paladin;
                 break;
             case 7:
-                characterStats[0].statValue = 3;//str
-                characterStats[1].statValue = 11;//dex
-                characterStats[2].statValue = 12;//con
+                characterStats[0].statValue = 13;//str
+                characterStats[1].statValue = 12;//dex
+                characterStats[2].statValue = 8;//con
                 characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[4].statValue = 11;//wis
+                characterStats[5].statValue = 6;//char
                 characterClass = CharacterClass.Ranger;
                 break;
             case 8:
-                characterStats[0].statValue = 13;//str
-                characterStats[1].statValue = 11;//dex
-                characterStats[2].statValue = 12;//con
+                characterStats[0].statValue = 6;//str
+                characterStats[1].statValue = 13;//dex
+                characterStats[2].statValue = 8;//con
                 characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[4].statValue = 11;//wis
+                characterStats[5].statValue = 12;//char
                 characterClass = CharacterClass.Rogue;
                 break;
             case 9:
-                characterStats[0].statValue = 13;//str
-                characterStats[1].statValue = 11;//dex
-                characterStats[2].statValue = 12;//con
-                characterStats[3].statValue = 10;//int
-                characterStats[4].statValue =20;//wis
-                characterStats[5].statValue = 13;//char
+                characterStats[0].statValue = 6;//str
+                characterStats[1].statValue = 8;//dex
+                characterStats[2].statValue = 13;//con
+                characterStats[3].statValue = 12;//int
+                characterStats[4].statValue = 11;//wis
+                characterStats[5].statValue = 10;//char
                 characterClass = CharacterClass.Sorcerer;
                 break;
             case 10:
-                characterStats[0].statValue = 13;//str
-                characterStats[1].statValue = 11;//dex
+                characterStats[0].statValue = 8;//str
+                characterStats[1].statValue = 6;//dex
                 characterStats[2].statValue = 12;//con
-                characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[3].statValue = 13;//int
+                characterStats[4].statValue = 11;//wis
+                characterStats[5].statValue = 10;//char
                 characterClass = CharacterClass.Warlock;
                 break;
             case 11:
-                characterStats[0].statValue = 13;//str
-                characterStats[1].statValue = 11;//dex
-                characterStats[2].statValue = 12;//con
-                characterStats[3].statValue = 10;//int
-                characterStats[4].statValue = 6;//wis
-                characterStats[5].statValue = 8;//char
+                characterStats[0].statValue = 8;//str
+                characterStats[1].statValue = 10;//dex
+                characterStats[2].statValue = 8;//con
+                characterStats[3].statValue = 13;//int
+                characterStats[4].statValue = 12;//wis
+                characterStats[5].statValue = 11;//char
                 characterClass = CharacterClass.Wizard;
                 break;
-            ;
+                #endregion
         }
     }
     #endregion
-
     #region Select Race
     void SelectRace(int raceIndex)
     {
         switch (raceIndex)
         {
             case 0:
-                characterStats[0].tempStatValue = 10;//str
-                characterStats[1].tempStatValue = 2;//dex
-                characterStats[2].tempStatValue =7;//con
-                characterStats[3].tempStatValue = 3;//int
-                characterStats[4].tempStatValue = 2;//wis
-                characterStats[5].tempStatValue = 7;//char
+                characterStats[0].tempStatValue = 3;//str
+                characterStats[1].tempStatValue = 0;//dex
+                characterStats[2].tempStatValue = 0;//con
+                characterStats[3].tempStatValue = 0;//int
+                characterStats[4].tempStatValue = 0;//wis
+                characterStats[5].tempStatValue = 3;//char
                 characterRace = CharacterRace.Dragonborn;
                 break;
+            #region the rest of the stats for race
             case 1:
-                characterStats[0].tempStatValue = 5;//str
-                characterStats[1].tempStatValue = 10;//dex
-                characterStats[2].tempStatValue = 5;//con
+                characterStats[0].tempStatValue = 3;//str
+                characterStats[1].tempStatValue = 0;//dex
+                characterStats[2].tempStatValue = 3;//con
                 characterStats[3].tempStatValue = 0;//int
                 characterStats[4].tempStatValue = 0;//wis
                 characterStats[5].tempStatValue = 0;//char
                 characterRace = CharacterRace.Dwarf;
                 break;
             case 2:
-                characterStats[0].tempStatValue =2;//str
-                characterStats[1].tempStatValue = 7;//dex
-                characterStats[2].tempStatValue = 3;//con
-                characterStats[3].tempStatValue = 10;//int
-                characterStats[4].tempStatValue = 5;//wis
-                characterStats[5].tempStatValue = 6;//char
+                characterStats[0].tempStatValue = 0;//str
+                characterStats[1].tempStatValue = 4;//dex
+                characterStats[2].tempStatValue = 0;//con
+                characterStats[3].tempStatValue = 1;//int
+                characterStats[4].tempStatValue = 0;//wis
+                characterStats[5].tempStatValue = 1;//char
                 characterRace = CharacterRace.Elf;
                 break;
             case 3:
                 characterStats[0].tempStatValue = 1;//str
-                characterStats[1].tempStatValue = 10;//dex
-                characterStats[2].tempStatValue = 1;//con
-                characterStats[3].tempStatValue = 1;//int
-                characterStats[4].tempStatValue = 1;//wis
+                characterStats[1].tempStatValue = 1;//dex
+                characterStats[2].tempStatValue = 0;//con
+                characterStats[3].tempStatValue = 4;//int
+                characterStats[4].tempStatValue = 0;//wis
                 characterStats[5].tempStatValue = 0;//char
                 characterRace = CharacterRace.Gnome;
                 break;
             case 4:
-                characterStats[0].tempStatValue = 4;//str
-                characterStats[1].tempStatValue =5;//dex
-                characterStats[2].tempStatValue = 5;//con
-                characterStats[3].tempStatValue = 8;//int
-                characterStats[4].tempStatValue = 4;//wis
-                characterStats[5].tempStatValue = 5;//char
+                characterStats[0].tempStatValue = 0;//str
+                characterStats[1].tempStatValue = 2;//dex
+                characterStats[2].tempStatValue = 1;//con
+                characterStats[3].tempStatValue = 0;//int
+                characterStats[4].tempStatValue = 0;//wis
+                characterStats[5].tempStatValue = 3;//char
                 characterRace = CharacterRace.HalfElf;
                 break;
             case 5:
-                characterStats[0].tempStatValue = 7;//str
-                characterStats[1].tempStatValue = 7;//dex
-                characterStats[2].tempStatValue = 7;//con
-                characterStats[3].tempStatValue = 4;//int
-                characterStats[4].tempStatValue = 4;//wis
-                characterStats[5].tempStatValue = 2;//char
+                characterStats[0].tempStatValue = 0;//str
+                characterStats[1].tempStatValue = 3;//dex
+                characterStats[2].tempStatValue = 1;//con
+                characterStats[3].tempStatValue = 0;//int
+                characterStats[4].tempStatValue = 1;//wis
+                characterStats[5].tempStatValue = 1;//char
                 characterRace = CharacterRace.Halfling;
                 break;
             case 6:
-                characterStats[0].tempStatValue = 8;//str
-                characterStats[1].tempStatValue = 3;//dex
-                characterStats[2].tempStatValue = 10;//con
-                characterStats[3].tempStatValue = 3;//int
-                characterStats[4].tempStatValue = 3;//wis
-                characterStats[5].tempStatValue = 5;//char
+                characterStats[0].tempStatValue = 6;//str
+                characterStats[1].tempStatValue = 0;//dex
+                characterStats[2].tempStatValue = 3;//con
+                characterStats[3].tempStatValue = 0;//int
+                characterStats[4].tempStatValue = -2;//wis
+                characterStats[5].tempStatValue = -1;//char
                 characterRace = CharacterRace.HalfOrc;
                 break;
             case 7:
-                characterStats[0].tempStatValue = 5;//str
-                characterStats[1].tempStatValue =5;//dex
-                characterStats[2].tempStatValue = 5;//con
-                characterStats[3].tempStatValue = 5;//int
-                characterStats[4].tempStatValue = 5;//wis
-                characterStats[5].tempStatValue = 5;//char
+                characterStats[0].tempStatValue = 1;//str
+                characterStats[1].tempStatValue = 1;//dex
+                characterStats[2].tempStatValue = 1;//con
+                characterStats[3].tempStatValue = 1;//int
+                characterStats[4].tempStatValue = 1;//wis
+                characterStats[5].tempStatValue = 1;//char
                 characterRace = CharacterRace.Human;
                 break;
             case 8:
-                characterStats[0].tempStatValue = 8;//str
-                characterStats[1].tempStatValue = 8;//dex
-                characterStats[2].tempStatValue = 8;//con
+                characterStats[0].tempStatValue = 0;//str
+                characterStats[1].tempStatValue = 0;//dex
+                characterStats[2].tempStatValue = 0;//con
                 characterStats[3].tempStatValue = 2;//int
-                characterStats[4].tempStatValue = 2;//wis
-                characterStats[5].tempStatValue = 2;//char
+                characterStats[4].tempStatValue = 1;//wis
+                characterStats[5].tempStatValue = 3;//char
                 characterRace = CharacterRace.Tiefling;
                 break;
-            
+                #endregion
         }
     }
-    #endregion
-
     #endregion
     public override void Update()
     {
 
     }
+    /*
     private void OnGUI()
     {
         //create the floats scrW and scrH that govern our 16:9 ratio
         screen.x = Screen.width / 16;
         screen.y = Screen.height / 9;
+        #region Change Textures
         for (int i = 0; i < materialNames.Length; i++)
         {
             if (GUI.Button(new Rect(0.25f * screen.x, 2.5f * screen.y + (i * 0.5f * screen.y), 0.5f * screen.x, 0.5f * screen.y), "<"))
             {
                 SetTexture(materialNames[i], -1);
-
             }
 
             GUI.Box(new Rect(0.75f * screen.x, 2.5f * screen.y + (i * 0.5f * screen.y), 1.5f * screen.x, 0.5f * screen.y), materialNames[i]);
@@ -569,49 +560,100 @@ public class CustomisationSet : Stats
                 SetTexture(materialNames[i], 1);
             }
         }
-        #region CharacterName
+        #endregion
+        #region Random and Reset
+        //create 2 buttons one Random and one Reset
+        //Random will feed a random amount to the direction 
+        if (GUI.Button(new Rect(0.25f * screen.x, 2.5f * screen.y + (materialNames.Length * 0.5f * screen.y), 1.25f * screen.x, 0.5f * screen.y), "Random"))
+        {
+            skinIndex = Random.Range(0, skinMax);
+            mouthIndex = Random.Range(0, mouthMax);
+            eyesIndex = Random.Range(0, eyesMax);
+            hairIndex = Random.Range(0, hairMax);
+            clothesIndex = Random.Range(0, clothesMax);
+            armourIndex = Random.Range(0, armourMax);
+            helmIndex = Random.Range(0, armourMax);
+
+            for (int i = 0; i < materialNames.Length; i++)
+            {
+                SetTexture(materialNames[i], 0);
+            }
+        }
+        //reset will set all to 0 both use SetTexture
+        if (GUI.Button(new Rect(1.5f * screen.x, 2.5f * screen.y + (materialNames.Length * 0.5f * screen.y), 1.25f * screen.x, 0.5f * screen.y), "Reset"))
+        {
+            // Way 1
+            SetTexture("Skin", skinIndex = 0);
+            SetTexture("Mouth", mouthIndex = 0);
+            SetTexture("Eyes", eyesIndex = 0);
+            SetTexture("Hair", hairIndex = 0);
+            SetTexture("Clothes", clothesIndex = 0);
+            SetTexture("Armour", armourIndex = 0);
+            SetTexture("Helm", helmIndex = 0);
+            //way 2
+            skinIndex = 0;
+            mouthIndex = 0;
+            eyesIndex = 0;
+            hairIndex = 0;
+            clothesIndex = 0;
+            armourIndex = 0;
+            helmIndex = 0;
+            for (int i = 0; i < materialNames.Length; i++)
+            {
+                SetTexture(materialNames[i], 0);
+            }
+        }
+        #endregion
+        #region Character Name
+        //name of our character equals a GUI TextField that holds our character name and limit of characters
+        //move down the screen or place somewhere else
         characterName = GUI.TextArea(new Rect(0.25f * screen.x, 2.5f * screen.y + ((materialNames.Length + 1) * 0.5f * screen.y), 2.5f * screen.x, 0.5f * screen.y), characterName, 32);
         #endregion
-
-        #region ClassSelection
-        if(GUI.Button(new Rect(12.75f*screen.x,2.5f *screen.y,2*screen.x,0.5f*screen.y),classDropDisplay))
+        #region Class Select
+        //button for toggling dropdown
+        if (GUI.Button(new Rect(12.75f * screen.x, 2.5f * screen.y, 2 * screen.x, 0.5f * screen.y), classDropDisplay))
         {
             classDrop = !classDrop;
         }
-
-        if(classDrop)
+        //if dropdown - scroll view that displays our classes as selectable buttons
+        if (classDrop)
         {
-            float listSize = System.Enum.GetNames(typeof(CharacterClass)).Length-1;
-            scrollPosClass = GUI.BeginScrollView(new Rect(12.75f * screen.x, 3f * screen.y, 2 * screen.x, 4f * screen.y), scrollPosClass, new Rect(0, 0, 0, listSize * 0.5f * screen.y));
+            int listSize = System.Enum.GetNames(typeof(CharacterClass)).Length - 1;
+            scrollPosClass = GUI.BeginScrollView(new Rect(12.75f * screen.x, 3 * screen.y, 2 * screen.x, 4 * screen.y), scrollPosClass, new Rect(0, 0, 0, listSize * 0.5f * screen.y));
+            //blank background box
             GUI.Box(new Rect(0, 0, 1.75f * screen.x, listSize * 0.5f * screen.y), "");
-            for(int i = 0; i < listSize; i++)
+            //loof for the button options
+            for (int i = 0; i < listSize; i++)
             {
-                if (GUI.Button(new Rect(0, 0.5f * screen.y * i-1, 1.75f * screen.x, 0.5f * screen.y), System.Enum.GetNames(typeof(CharacterClass))[i+1]))
-                    {
+                if (GUI.Button(new Rect(0, 0.5f * screen.y * i, 1.75f * screen.x, 0.5f * screen.y), System.Enum.GetNames(typeof(CharacterClass))[i + 1]))
+                {
                     SelectClass(i);
-                    classDropDisplay= System.Enum.GetNames(typeof(CharacterClass))[i+1];
+                    classDropDisplay = System.Enum.GetNames(typeof(CharacterClass))[i + 1];
                     classDrop = !classDrop;
-
                 }
-                
             }
             GUI.EndScrollView();
         }
+        #endregion
         else
         {
+            #region Race Select
+            //button for toggling dropdown
             if (GUI.Button(new Rect(12.75f * screen.x, 3f * screen.y, 2 * screen.x, 0.5f * screen.y), raceDropDisplay))
             {
-                raceDrop = !classDrop;
+                raceDrop = !raceDrop;
             }
-            #region RaceSelection
+            //if dropdown - scroll view that displays our races as selectable buttons
             if (raceDrop)
             {
-                float raceListSize = System.Enum.GetNames(typeof(CharacterRace)).Length - 1;
-                scrollPosClass = GUI.BeginScrollView(new Rect(12.75f * screen.x, 3.5f * screen.y, 2 * screen.x, 4f * screen.y), scrollPosClass, new Rect(0, 0, 0, raceListSize * 0.5f * screen.y));
-                GUI.Box(new Rect(0, 0, 1.75f * screen.x, raceListSize * 0.5f * screen.y), "");
-                for (int i = 0; i < raceListSize; i++)
+                int listSize = System.Enum.GetNames(typeof(CharacterRace)).Length - 1;
+                scrollPosRace = GUI.BeginScrollView(new Rect(12.75f * screen.x, 3.5f * screen.y, 2 * screen.x, 4 * screen.y), scrollPosRace, new Rect(0, 0, 0, listSize * 0.5f * screen.y));
+                //blank background box
+                GUI.Box(new Rect(0, 0, 1.75f * screen.x, listSize * 0.5f * screen.y), "");
+                //loof for the button options
+                for (int i = 0; i < listSize; i++)
                 {
-                    if (GUI.Button(new Rect(0, 0.5f * screen.y * i - 1, 1.75f * screen.x, 0.5f * screen.y), System.Enum.GetNames(typeof(CharacterRace))[i + 1]))
+                    if (GUI.Button(new Rect(0, 0.5f * screen.y * i, 1.75f * screen.x, 0.5f * screen.y), System.Enum.GetNames(typeof(CharacterRace))[i + 1]))
                     {
                         SelectRace(i);
                         raceDropDisplay = System.Enum.GetNames(typeof(CharacterRace))[i + 1];
@@ -620,29 +662,35 @@ public class CustomisationSet : Stats
                 }
                 GUI.EndScrollView();
             }
+            #endregion
         }
-        #endregion
-        #endregion
-
         #region Add Points
-
-        if(!classDrop&&!raceDrop)
+        // stats - display stats
+        if (!classDrop && !raceDrop)
         {
+            //Box for points to spend
             GUI.Box(new Rect(12.75f * screen.x, 3.5f * screen.y, 2 * screen.x, 0.5f * screen.y), "Points: " + bonusStats);
-
-            for (int i = 0; i < characterStats.Length;i ++)
+            // + and - buttons on either side of a box/label
+            for (int i = 0; i < characterStats.Length; i++)
             {
-                if(bonusStats < 6 && characterStats[i].levelTempStatValue>0)
+                //remove points from level temp and add points to bonus stats
+                if (bonusStats < 6 && characterStats[i].levelTempStatValue > 0)
                 {
-                    if(GUI.Button(new Rect(12.75f*screen.x,4*screen.y+(i*0.5f*screen.y),2*screen.x,0.5f*screen.y),"-"))
+                    if (GUI.Button(new Rect(12.25f * screen.x, 4 * screen.y + (i * 0.5f * screen.y), 0.5f * screen.x, 0.5f * screen.y), "-"))
                     {
+
                         bonusStats++;
                         characterStats[i].levelTempStatValue--;
                     }
                 }
-                GUI.Box(new Rect(12.75f * screen.x, 4 * screen.y + (i * 0.5f * screen.y), 2 * screen.x,0.5f * screen.y), statName[i] + ":" + (characterStats[i].statValue + characterStats[i].tempStatValue + characterStats[i].levelTempStatValue));
-                if(bonusStats>0)
+                //type
+                //display total stats and stat name
+                GUI.Box(new Rect(12.75f * screen.x, 4 * screen.y + (i * 0.5f * screen.y), 2 * screen.x, 0.5f * screen.y), statName[i] + ": " + (characterStats[i].statValue + characterStats[i].tempStatValue + characterStats[i].levelTempStatValue));
+                //+
+                //if bonus stats are above 0
+                if (bonusStats > 0)
                 {
+                    //remove points from bonus stats and add points to level temp
                     if (GUI.Button(new Rect(14.75f * screen.x, 4 * screen.y + (i * 0.5f * screen.y), 0.5f * screen.x, 0.5f * screen.y), "+"))
                     {
                         bonusStats--;
@@ -650,60 +698,43 @@ public class CustomisationSet : Stats
                     }
                 }
             }
+            
         }
         #endregion
-
-        /* if (GUI.Button(new Rect(0.25f * screen.x, 6f * screen.y, 1.25f * screen.x, 0.5f * screen.y), "Random"))
-         {
-             for (int i = 0; i < materialNames.Length; i++)
-             {
-
-                 SetTexture("Skin", skinIndex = Random.Range(0,skinMax-1));
-                 SetTexture("Mouth", mouthIndex = Random.Range(0,mouthMax-1));
-                 SetTexture("Eyes", eyesIndex = Random.Range(0,eyesMax-1));
-                 SetTexture("Hair", hairIndex = Random.Range(0,hairIndex-1));
-                 SetTexture("Clothes", clothesIndex = Random.Range(0,clothesMax-1));
-                 SetTexture("Armour", armourIndex = Random.Range(0,armourMax-1));
-             }
-         }
-         if(GUI.Button(new Rect(1.5f * screen.x, 6f * screen.y, 1.25f * screen.x, 0.5f * screen.y), "Reset"))
-         {
-
-             SetTexture("Skin", skinIndex = 0);
-             SetTexture("Mouth", mouthIndex = 0);
-             SetTexture("Eyes", eyesIndex = 0);
-             SetTexture("Hair", hairIndex = 0);
-             SetTexture("Clothes", clothesIndex = 0);
-             SetTexture("Armour", armourIndex = 0);
-         }
-        */
-        if (GUI.Button(new Rect(0.25f * screen.x,2.5f* screen.y+(materialNames.Length*0.5f*screen.y), 1.25f * screen.x, 0.5f * screen.y), "Random"))
-         {
-             skinIndex = Random.Range(0, skinMax - 1);
-             mouthIndex = Random.Range(0, mouthMax - 1);
-             eyesIndex = Random.Range(0, eyesMax - 1);
-             hairIndex = Random.Range(0, hairIndex - 1);
-             clothesIndex = Random.Range(0, clothesMax - 1);
-             armourIndex = Random.Range(0, armourMax - 1);
-            
-             for(int i =0; i< materialNames.Length;i++)
-             {
-                 SetTexture(materialNames[i], 0);
-             }
-         }
-
-         if(GUI.Button(new Rect(1.5f * screen.x, 2.5f * screen.y + (materialNames.Length * 0.5f * screen.y), 1.25f * screen.x, 0.5f * screen.y), "Reset"))
-         {
-             SetTexture("Skin", skinIndex = 0);
-             SetTexture("Mouth", mouthIndex = 0);
-             SetTexture("Eyes", eyesIndex = 0);
-             SetTexture("Hair", hairIndex = 0);
-             SetTexture("Clothes", clothesIndex = 0);
-             SetTexture("Armour", armourIndex = 0);
-         }
-     }
-        
-
+        #region Save and Play
+        // display button if named/Class/Race/Points
+        if (characterName != "" && classDropDisplay != "Select Class" && raceDropDisplay != "Select Race" && bonusStats == 0)
+        {
+            //GUI Button called Save and Play 
+            if (GUI.Button(new Rect(7f*screen.x, 7.5f*screen.y, 2f*screen.x, 0.5f*screen.y),"Save and Play"))
+            {
+                //this button will run the save function 
+                SaveCharacter();
+                //and also load into the game level
+                SceneManager.LoadScene(2);
+            }
+        }
+        #endregion
     }
-
-
+    */
+    void SaveCharacter()
+    {
+        //SetInt for skins
+        PlayerPrefs.SetInt("SkinIndex", skinIndex);
+        PlayerPrefs.SetInt("HairIndex", hairIndex);
+        PlayerPrefs.SetInt("MouthIndex", mouthIndex);
+        PlayerPrefs.SetInt("EyesIndex", eyesIndex);
+        PlayerPrefs.SetInt("ClothesIndex", clothesIndex);
+        PlayerPrefs.SetInt("ArmourIndex", armourIndex);
+        PlayerPrefs.SetInt("HelmIndex", helmIndex);
+        //SetString CharacterName, class, race
+        PlayerPrefs.SetString("CharacterName", characterName);
+        PlayerPrefs.SetString("CharacterClass", characterClass.ToString());
+        PlayerPrefs.SetString("CharacterRace", characterRace.ToString());
+        //int loop stats
+        for (int i = 0; i < characterStats.Length; i++)
+        {
+            PlayerPrefs.SetInt(characterStats[i].name, (characterStats[i].statValue + characterStats[i].tempStatValue+ characterStats[i].levelTempStatValue));
+        }
+    }
+}

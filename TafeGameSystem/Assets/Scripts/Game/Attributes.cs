@@ -28,7 +28,6 @@ public class Attributes : MonoBehaviour
     public bool canHeal;
     public bool isUnAlived;
     public float healDelayTimer;
-    public bool Custom;
     #endregion
     public virtual void RegenOverTime(int attributeIndex)
     {
@@ -69,15 +68,10 @@ public class Attributes : MonoBehaviour
     }
     public virtual void Update()
     {
-
         #region Attributes Display
-        if (!Custom)
-        {
-            SetHealth();
-            SetMana();
-            SetStamina();
-        }
-       
+        SetHealth();
+        SetMana();
+        SetStamina();
         #endregion
         #region Can Heal
         //if we cant heal

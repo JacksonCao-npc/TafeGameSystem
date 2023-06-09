@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 //you will need to change Scenes
 using UnityEngine.SceneManagement;
+using System.IO;
+using UnityEngine.Rendering;
+using System.Linq;
+
 public class CustomisationSet : Stats
 {
     #region Variables   
     [Header("Character Name")]
     //name of our character that the user is making
     public string characterName;
-    public TextMeshProUGUI characterNameUI;
     [Header("Texture List")]
     //Texture2D List for skin,hair, mouth, eyes
     public List<Texture2D> skin = new List<Texture2D>(); //1
@@ -32,7 +34,6 @@ public class CustomisationSet : Stats
     public int mouthMax, eyesMax, hairMax, clothesMax, armourMax;
 
     public string[] materialNames = new string[7] { "Skin", "Mouth", "Eyes", "Hair", "Clothes", "Armour", "Helm" };
-    public TextMeshProUGUI[] materialNamesUI;
     public Vector2 screen;
     [Header("Class and Race")]
     public bool raceDrop;
@@ -43,6 +44,7 @@ public class CustomisationSet : Stats
     public int bonusStats = 6;
     public string[] statName = new string[6] { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" };
 
+    public TextSaving textSaving;
 
     #endregion
 
@@ -50,6 +52,7 @@ public class CustomisationSet : Stats
     //in start we need to set up the following
     private void Start()
     {
+        //Load();
         #region for loop to pull textures from file
         //for loop looping from 0 to less than the max amount of skin textures we need
         for (int i = 0; i < skinMax; i++)
@@ -104,59 +107,11 @@ public class CustomisationSet : Stats
         character = GameObject.Find("Mesh").GetComponent<Renderer>();
         helm = GameObject.Find("cap").GetComponent<Renderer>();
         #region do this after making the function SetTexture
-        SetTexture("Skin", skinIndex = 0);
-        SetTexture("Mouth", mouthIndex = 0);
-        SetTexture("Eyes", eyesIndex = 0);
-        SetTexture("Hair", hairIndex = 0);
-        SetTexture("Clothes", clothesIndex = 0);
-        SetTexture("Armour", armourIndex = 0);
-        SetTexture("Helm", helmIndex = 0);
+        //SetTexture for all materials to the first texture 0    
         #endregion
-        // Settting the name of materials in the Canvans.
-        for (int i = 0; i < statName.Length+1; i++)
-        {
-            materialNamesUI[i].text = materialNames[i];
-        }
     }
     #endregion
-    #region Botton Methods
-    public void LeftButtons(int index)
-    {
-        SetTexture(materialNames[index], -1);
-    }
 
-    public void RightButtons(int index)
-    {
-        SetTexture(materialNames[index], +1);
-    }
-
-    public void ResetButtons()
-    {
-        SetTexture("Skin", skinIndex = 0);
-        SetTexture("Mouth", mouthIndex = 0);
-        SetTexture("Eyes", eyesIndex = 0);
-        SetTexture("Hair", hairIndex = 0);
-        SetTexture("Clothes", clothesIndex = 0);
-        SetTexture("Armour", armourIndex = 0);
-        SetTexture("Helm", helmIndex = 0);
-    }
-
-    public  void RandomButtons()
-    {
-        skinIndex = Random.Range(0, skinMax);
-        mouthIndex = Random.Range(0, mouthMax);
-        eyesIndex = Random.Range(0, eyesMax);
-        hairIndex = Random.Range(0, hairMax);
-        clothesIndex = Random.Range(0, clothesMax);
-        armourIndex = Random.Range(0, armourMax);
-        helmIndex = Random.Range(0, armourMax);
-
-        for (int i = 0; i < materialNames.Length; i++)
-        {
-            SetTexture(materialNames[i], 0);
-        }
-    }
-    #endregion
     #region SetTexture
     //Create a function that is called SetTexture it should contain a string and int
     //the string is the name of the material we are editing, the int is the direction we are changing 
@@ -539,7 +494,6 @@ public class CustomisationSet : Stats
     {
 
     }
-    /*
     private void OnGUI()
     {
         //create the floats scrW and scrH that govern our 16:9 ratio
@@ -698,7 +652,7 @@ public class CustomisationSet : Stats
                     }
                 }
             }
-            
+
         }
         #endregion
         #region Save and Play
@@ -706,7 +660,7 @@ public class CustomisationSet : Stats
         if (characterName != "" && classDropDisplay != "Select Class" && raceDropDisplay != "Select Race" && bonusStats == 0)
         {
             //GUI Button called Save and Play 
-            if (GUI.Button(new Rect(7f*screen.x, 7.5f*screen.y, 2f*screen.x, 0.5f*screen.y),"Save and Play"))
+            if (GUI.Button(new Rect(7f * screen.x, 7.5f * screen.y, 2f * screen.x, 0.5f * screen.y), "Save and Play"))
             {
                 //this button will run the save function 
                 SaveCharacter();
@@ -716,25 +670,73 @@ public class CustomisationSet : Stats
         }
         #endregion
     }
-    */
-    void SaveCharacter()
-    {
-        //SetInt for skins
-        PlayerPrefs.SetInt("SkinIndex", skinIndex);
-        PlayerPrefs.SetInt("HairIndex", hairIndex);
-        PlayerPrefs.SetInt("MouthIndex", mouthIndex);
-        PlayerPrefs.SetInt("EyesIndex", eyesIndex);
-        PlayerPrefs.SetInt("ClothesIndex", clothesIndex);
-        PlayerPrefs.SetInt("ArmourIndex", armourIndex);
-        PlayerPrefs.SetInt("HelmIndex", helmIndex);
-        //SetString CharacterName, class, race
-        PlayerPrefs.SetString("CharacterName", characterName);
-        PlayerPrefs.SetString("CharacterClass", characterClass.ToString());
-        PlayerPrefs.SetString("CharacterRace", characterRace.ToString());
-        //int loop stats
+   public string SaveData()
+   {
+        string temp = 
+            skinIndex+"\n" + 
+            mouthIndex + "\n" +
+            eyesIndex + "\n"+ 
+            hairIndex + "\n" + 
+            clothesIndex + "\n" + 
+            armourIndex + "\n"+
+            helmIndex+"\n"+ 
+            characterName+"\n"+ 
+            characterClass + "\n" + 
+            characterRace;
+        //you can use this one
         for (int i = 0; i < characterStats.Length; i++)
         {
-            PlayerPrefs.SetInt(characterStats[i].name, (characterStats[i].statValue + characterStats[i].tempStatValue+ characterStats[i].levelTempStatValue));
+            temp = temp.Insert(temp.Length, "\n" + (characterStats[i].statValue + characterStats[i].tempStatValue + characterStats[i].levelTempStatValue));
         }
+        ////or this one 
+        //for (int i = 0; i < characterStats.Length; i++)
+        //{
+        //    temp += "\n" + (characterStats[i].statValue + characterStats[i].tempStatValue + characterStats[i].levelTempStatValue);
+        //}
+        
+        // it will need this regardless 
+        return temp;
+   }
+    void SaveCharacter()
+    {
+        string path = Application.persistentDataPath + "/SaveSlot1";
+
+        #region Text Saving
+        textSaving.CharacterSaveSlot(path, SaveData());
+        #endregion
+        #region PlayerPrefs
+        ////SetInt for skins
+        //PlayerPrefs.SetInt("SkinIndex", skinIndex);
+        //PlayerPrefs.SetInt("HairIndex", mouthIndex);
+        //PlayerPrefs.SetInt("MouthIndex", hairIndex);
+        //PlayerPrefs.SetInt("EyesIndex", eyesIndex);
+        //PlayerPrefs.SetInt("ClothesIndex", clothesIndex);
+        //PlayerPrefs.SetInt("ArmourIndex", armourIndex);
+        //PlayerPrefs.SetInt("HelmIndex", helmIndex);
+        ////SetString CharacterName, class, race
+        //PlayerPrefs.SetString("CharacterName", characterName);
+        //PlayerPrefs.SetString("CharacterClass", characterClass.ToString());
+        //PlayerPrefs.SetString("CharacterRace", characterRace.ToString());
+        ////int loop stats
+        //for (int i = 0; i < characterStats.Length; i++)
+        //{
+        //    PlayerPrefs.SetInt(characterStats[i].name, (characterStats[i].statValue + characterStats[i].tempStatValue+ characterStats[i].levelTempStatValue));
+        //}
+        #endregion
     }
+    #region PlayerPrefs Load Example
+    //void Load()
+    //{
+    //    //if the registry contains a file with the string name of CharacterName
+    //    if (PlayerPrefs.HasKey("CharacterName"))
+    //    {
+    //        //Set the character name to the registry file data from the file CharacterName
+    //        characterName = PlayerPrefs.GetString("CharacterName");
+    //    }
+    //    else 
+    //    {
+    //        Debug.LogWarning("OH NO! NO SAVE INFO IS STORED! AHHHHHH");
+    //    }
+    //}
+    #endregion
 }
